@@ -78,8 +78,8 @@ OPENROUTER_API_KEY = os.getenv('OPENROUTER_API_KEY', '')
 GEMINI_API_KEY = os.getenv('GEMINI_API_KEY', '')
 
 # Owner credentials
-OWNER_USERNAME = os.getenv('OWNER_USERNAME', 'khan')
-OWNER_PASSWORD = os.getenv('OWNER_PASSWORD', 'aisociety2024')
+OWNER_USERNAME = os.getenv('OWNER_USERNAME')
+OWNER_PASSWORD = os.getenv('OWNER_PASSWORD')
 
 # Celery
 CELERY_BROKER_URL = os.getenv('REDIS_URL', 'redis://localhost:6379/0')

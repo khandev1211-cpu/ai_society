@@ -5,121 +5,88 @@ A private multi-model AI chat platform. Only you can login and send messages. Vi
 
 ---
 
-## Your credentials (change before deploying)
-- Username: `khan`
-- Password: `aisociety2024`
+## Step 1 — Configure credentials FIRST
 
-Change in `.env`:
+Open `.env` and set your own values before running anything:
+
 ```
-OWNER_USERNAME=khan
-OWNER_PASSWORD=your-new-strong-password
+SECRET_KEY=generate-a-long-random-string-here
+DEBUG=False
+ALLOWED_HOSTS=yourdomain.com,www.yourdomain.com
+
+# Set your own username and password — never share this file
+OWNER_USERNAME=your_username
+OWNER_PASSWORD=your_strong_password
+
+# AI Provider API Keys — get these from each provider
+GROQ_API_KEY=
+OPENROUTER_API_KEY=
+GEMINI_API_KEY=
 ```
 
----
-
-## Step 1 — Upload to your VPS
-
+Generate a strong SECRET_KEY:
 ```bash
-# On your local machine
-scp -r /home/claude/ai_society khan@your-vps-ip:/home/khan/
-
-# SSH into VPS
-ssh khan@your-vps-ip
-cd /home/khan/ai_society
+python -c "import secrets; print(secrets.token_urlsafe(50))"
 ```
+
+> ⚠️ Never commit `.env` to Git. It is already in `.gitignore`.
 
 ---
 
 ## Step 2 — Install dependencies
 
 ```bash
-python3 -m venv venv
-source venv/bin/activate
-pip install django djangorestframework channels daphne celery redis \
-            openai google-genai python-dotenv psycopg2-binary \
-            channels-redis cryptography requests Pillow
+pip install djangorestframework django channels daphne openai google-genai python-dotenv requests Pillow
 ```
 
 ---
 
-## Step 3 — Configure .env
+## Step 3 — Setup database
 
 ```bash
-nano .env
-```
-
-Fill in your actual API keys:
-```
-SECRET_KEY=generate-a-long-random-string-here
-DEBUG=False
-ALLOWED_HOSTS=yourdomain.com,www.yourdomain.com
-
-OWNER_USERNAME=khan
-OWNER_PASSWORD=your-strong-password
-
-GROQ_API_KEY=gsk_xxxxxxxxxxxxxxxxxxxx
-OPENROUTER_API_KEY=sk-or-xxxxxxxxxxxxxxxxxxxx
-GEMINI_API_KEY=AIzaSyxxxxxxxxxxxxxxxx
-
-REDIS_URL=redis://localhost:6379/0
-```
-
----
-
-## Step 4 — Setup database and sync models
-
-```bash
-source venv/bin/activate
 python manage.py migrate
 python manage.py collectstatic --noinput
+```
+
+---
+
+## Step 4 — Sync models from providers
+
+```bash
 python manage.py shell -c "from models_registry.views import sync_models; print(sync_models(), 'models synced')"
 ```
 
 ---
 
-## Step 5 — Setup systemd service
+## Step 5 — Run locally (dev)
 
 ```bash
+python manage.py runserver 0.0.0.0:8000
+```
+
+---
+
+## Step 6 — Deploy on VPS
+
+### Systemd service
+```bash
 sudo cp ai_society.service /etc/systemd/system/
+# Edit the service file — set your username and paths
+sudo nano /etc/systemd/system/ai_society.service
 sudo systemctl daemon-reload
 sudo systemctl enable ai_society
 sudo systemctl start ai_society
-sudo systemctl status ai_society
 ```
 
----
-
-## Step 6 — Setup Nginx + SSL
-
+### Nginx + SSL
 ```bash
-# Install nginx and certbot
 sudo apt install nginx certbot python3-certbot-nginx -y
-
-# Copy nginx config
 sudo cp nginx.conf /etc/nginx/sites-available/ai_society
-sudo ln -s /etc/nginx/sites-available/ai_society /etc/nginx/sites-enabled/
 sudo nano /etc/nginx/sites-available/ai_society  # replace yourdomain.com
-
-# Get SSL certificate
-sudo certbot --nginx -d yourdomain.com -d www.yourdomain.com
-
-# Restart nginx
-sudo nginx -t && sudo systemctl restart nginx
+sudo ln -s /etc/nginx/sites-available/ai_society /etc/nginx/sites-enabled/
+sudo certbot --nginx -d yourdomain.com
+sudo systemctl restart nginx
 ```
-
----
-
-## Step 7 — Install as PWA
-
-### On mobile (Android/iOS):
-1. Open `https://yourdomain.com` in Chrome/Safari
-2. Tap Share → "Add to Home Screen"
-3. App installs like a native app
-
-### On desktop (Chrome/Edge):
-1. Open `https://yourdomain.com`
-2. Click the install icon in address bar (or the toast notification)
-3. App installs as a desktop app
 
 ---
 
@@ -146,7 +113,6 @@ sudo nginx -t && sudo systemctl restart nginx
 - ✅ PWA — installable on mobile and desktop
 - ✅ Mobile responsive
 - ✅ 3D glassmorphism design with neural network background
-- ✅ Add new channels
 
 ---
 
@@ -160,34 +126,29 @@ ai_society/
 ├── orchestrator/       # DM routing, model calls
 ├── templates/          # Frontend (index.html)
 ├── static/             # PWA icons, manifest, service worker
-├── .env                # Your secrets (never commit this)
+├── .env                # ← your secrets — never share or commit
 ├── start.sh            # Production start
-├── start_dev.sh        # Dev start
 ├── nginx.conf          # Nginx config
 └── ai_society.service  # Systemd service
 ```
 
 ---
 
-## Update models (run anytime)
-```bash
-curl -X POST https://yourdomain.com/api/models/sync/ \
-  -H "Cookie: sessionid=your-session-cookie"
-```
-Or click the Sync button inside the app.
-
----
-
 ## Troubleshooting
 
-**WebSocket not connecting:**
-- Make sure Nginx config has the `/ws/` location block
+**ModuleNotFoundError: No module named 'rest_framework'**
+```bash
+pip install djangorestframework channels daphne openai google-genai python-dotenv requests
+```
+
+**WebSocket not connecting**
+- Ensure Nginx config has the `/ws/` location block
 - Check `sudo systemctl status ai_society`
 
-**Models not responding:**
-- Check your API keys in `.env`
-- Groq and OpenRouter have rate limits on free tier — space out messages
+**Models not responding**
+- Verify API keys in `.env`
+- Free tier providers have rate limits — space out messages
 
-**App not installable:**
-- Must be served over HTTPS for PWA install to work
-- Check that `/static/manifest.json` is accessible
+**App not installable as PWA**
+- Must be served over HTTPS
+- Verify `/static/manifest.json` is accessible

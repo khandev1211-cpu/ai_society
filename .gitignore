@@ -1,17 +1,9 @@
 .env
- 
-__pycache__ 
-
-# Byte-compiled / optimized / DLL files
+*.pyc
 __pycache__/
-*.py[cod]
-*$py.class
-
-# C extensions
-*.so
-
-#databse sqlite3
-*.sqlite3
-# Distribution / packaging
-.Python
-
+db.sqlite3
+staticfiles/
+media/
+venv/
+.DS_Store
+*.log
