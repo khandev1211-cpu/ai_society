@@ -1,4 +1,5 @@
 openai
+google-generativeai
 google-genai
 djangorestframework
 channels==4.0.0
