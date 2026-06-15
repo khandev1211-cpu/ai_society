@@ -1,0 +1,7 @@
+openai
+google-genai
+djangorestframework
+channels==4.0.0
+daphne===4.0.0
+python-dotenv
+requests
