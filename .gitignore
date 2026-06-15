@@ -1,0 +1,17 @@
+.env
+ 
+__pycache__ 
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+#databse sqlite3
+*.sqlite3
+# Distribution / packaging
+.Python
+

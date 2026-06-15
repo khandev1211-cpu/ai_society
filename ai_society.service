@@ -1,0 +1,14 @@
+[Unit]
+Description=AI Society - Multi-model AI Chat Platform
+After=network.target
+
+[Service]
+User=khan
+WorkingDirectory=/home/khan/ai_society
+EnvironmentFile=/home/khan/ai_society/.env
+ExecStart=/home/khan/ai_society/venv/bin/daphne -b 127.0.0.1 -p 8000 ai_society.asgi:application
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

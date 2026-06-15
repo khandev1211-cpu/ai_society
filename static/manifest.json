@@ -1,0 +1,18 @@
+{
+  "name": "AI Society",
+  "short_name": "AI Society",
+  "description": "Your private multi-model AI chat platform",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#07080f",
+  "theme_color": "#6c47ff",
+  "orientation": "any",
+  "icons": [
+    {"src": "/static/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable"},
+    {"src": "/static/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable"}
+  ],
+  "shortcuts": [
+    {"name": "General Chat", "url": "/", "description": "Open general channel"},
+    {"name": "Cybersec", "url": "/?channel=cybersec", "description": "Cybersecurity channel"}
+  ]
+}
