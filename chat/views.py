@@ -1,9 +1,12 @@
 from django.shortcuts import render, redirect
 from django.http import JsonResponse
 from django.views import View
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
 from django.conf import settings
 from .models import Room, Message
 
+@method_decorator(csrf_exempt, name='dispatch')
 class LoginView(View):
     def get(self, request):
         if request.session.get('is_owner'):
@@ -11,7 +14,8 @@ class LoginView(View):
         return render(request, 'index.html')
 
     def post(self, request):
-        data = __import__('json').loads(request.body)
+        import json
+        data = json.loads(request.body)
         u = data.get('username','').strip()
         p = data.get('password','')
         if u == settings.OWNER_USERNAME and p == settings.OWNER_PASSWORD:
@@ -20,6 +24,7 @@ class LoginView(View):
             return JsonResponse({'ok': True})
         return JsonResponse({'error': 'Invalid credentials'}, status=401)
 
+@method_decorator(csrf_exempt, name='dispatch')
 class LogoutView(View):
     def post(self, request):
         request.session.flush()
