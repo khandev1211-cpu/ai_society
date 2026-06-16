@@ -57,20 +57,23 @@ class ChatConsumer(AsyncWebsocketConsumer):
         models = await self.get_models()
         if not models:
             return
-        if tags:
+
+        # @all or @everyone — pick up to 4 random models
+        if any(t.lower() in ('all', 'everyone') for t in tags):
+            responders = random.sample(models, min(4, len(models)))
+        elif tags:
             responders = [m for m in models if any(t.lower() in m['name'].lower() for t in tags)]
             if not responders:
                 responders = [random.choice(models)]
         else:
-            # Only 1-2 random models respond to keep it clean
-            n = random.randint(1, min(2, len(models)))
-            responders = random.sample(models, n)
-        # Prefer Groq models first (fastest, no rate limit issues)
-        groq = [m for m in responders if m['provider'] == 'groq']
-        others = [m for m in responders if m['provider'] != 'groq']
-        ordered = groq + others
-        for i, model in enumerate(ordered):
-            asyncio.ensure_future(self.delayed_response(model, content, i * 1.5))
+            # No tag — 1 or 2 random models, prefer Groq (fastest)
+            groq = [m for m in models if m['provider'] == 'groq']
+            pool = groq if groq else models
+            n = random.randint(1, min(2, len(pool)))
+            responders = random.sample(pool, n)
+
+        for i, model in enumerate(responders):
+            asyncio.ensure_future(self.delayed_response(model, content, i * 1.8))
 
     async def delayed_response(self, model, user_content, delay):
         await asyncio.sleep(delay)
@@ -84,6 +87,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         if not self._active:
             return
         response = await self.call_ai_model(model, user_content)
+        # Skip silently if None — no error messages in chat
         if response and self._active:
             ai_msg = await self.save_message(
                 sender_type='ai', sender_name=model['name'],

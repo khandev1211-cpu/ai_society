@@ -1,0 +1,44 @@
+# Dead models — remove these from providers.py
+
+[groq] llama3-70b-8192 — DECOMMISSIONED
+[groq] llama3-8b-8192 — DECOMMISSIONED
+[groq] mixtral-8x7b-32768 — DECOMMISSIONED
+[groq] gemma2-9b-it — DECOMMISSIONED
+[groq] gemma-7b-it — DECOMMISSIONED
+[groq] qwen-qwq-32b — DECOMMISSIONED
+[groq] deepseek-r1-distill-llama-70b — DECOMMISSIONED
+[groq] deepseek-r1-distill-qwen-32b — DECOMMISSIONED
+[groq] llama-3.2-11b-vision-preview — DECOMMISSIONED
+[groq] llama-3.2-3b-preview — DECOMMISSIONED
+[groq] llama-3.3-70b-specdec — DECOMMISSIONED
+[groq] meta-llama/llama-4-maverick-17b-128e-instruct — NOT_FOUND
+[groq] mistral-saba-24b — DECOMMISSIONED
+[groq] compound-beta-mini — RATE_LIMITED
+[openrouter] meta-llama/llama-3.3-70b-instruct:free — RATE_LIMITED
+[openrouter] meta-llama/llama-4-scout:free — NOT_FOUND
+[openrouter] meta-llama/llama-4-maverick:free — NOT_FOUND
+[openrouter] deepseek/deepseek-r1:free — NOT_FOUND
+[openrouter] deepseek/deepseek-v3:free — Error code: 400 - {'error': {'message': 'deepseek/deepseek-v3:free is not a vali
+[openrouter] deepseek/deepseek-r1-0528:free — NOT_FOUND
+[openrouter] deepseek/deepseek-r1t-chimera:free — Error code: 400 - {'error': {'message': 'deepseek/deepseek-r1t-chimera:free is n
+[openrouter] mistralai/mistral-small-3.1-24b-instruct:free — NOT_FOUND
+[openrouter] mistralai/mistral-7b-instruct:free — NOT_FOUND
+[openrouter] qwen/qwen3-235b-a22b:free — NOT_FOUND
+[openrouter] qwen/qwen3-30b-a3b:free — NOT_FOUND
+[openrouter] qwen/qwen3-14b:free — NOT_FOUND
+[openrouter] qwen/qwen3-8b:free — NOT_FOUND
+[openrouter] google/gemma-3-12b-it:free — NOT_FOUND
+[openrouter] google/gemma-3-27b-it:free — NOT_FOUND
+[openrouter] google/gemma-3n-e4b-it:free — NOT_FOUND
+[openrouter] microsoft/phi-4:free — NOT_FOUND
+[openrouter] microsoft/phi-4-reasoning-plus:free — NOT_FOUND
+[openrouter] nvidia/llama-3.1-nemotron-ultra-253b-v1:free — NOT_FOUND
+[openrouter] tngtech/deepseek-r1t-chimera:free — NOT_FOUND
+[openrouter] moonshotai/kimi-k2:free — NOT_FOUND
+[openrouter] nousresearch/hermes-3-llama-3.1-405b:free — RATE_LIMITED
+[gemini] gemini-2.0-flash — RATE_LIMITED (quota exceeded)
+[gemini] gemini-2.0-flash-lite — RATE_LIMITED (quota exceeded)
+[gemini] gemini-2.0-flash-001 — RATE_LIMITED (quota exceeded)
+[gemini] gemini-1.5-flash — NOT_FOUND
+[gemini] gemini-1.5-flash-8b — NOT_FOUND
+[gemini] gemini-1.5-pro — NOT_FOUND
