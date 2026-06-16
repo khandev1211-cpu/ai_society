@@ -1,10 +1,11 @@
 from django.http import JsonResponse
 from django.views import View
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
 from .models import AIModel
 from .providers import fetch_groq_models, fetch_openrouter_models, fetch_gemini_models
 
 def sync_models():
-    """Sync all models from all providers into DB."""
     all_models = (
         fetch_groq_models() +
         fetch_openrouter_models() +
@@ -20,16 +21,13 @@ def sync_models():
 class ModelListView(View):
     def get(self, request):
         models = AIModel.objects.filter(is_active=True, is_free=True)
-        data = [{
-            'id': m.id, 'model_id': m.model_id, 'name': m.name,
-            'provider': m.provider, 'color': m.color,
-            'bg_color': m.bg_color, 'initials': m.initials,
-        } for m in models]
+        data = [{'id':m.id,'model_id':m.model_id,'name':m.name,'provider':m.provider,
+                 'color':m.color,'bg_color':m.bg_color,'initials':m.initials} for m in models]
         return JsonResponse({'models': data, 'count': len(data)})
 
+@method_decorator(csrf_exempt, name='dispatch')
 class SyncModelsView(View):
     def post(self, request):
-        # Auth check — only owner
         if not request.session.get('is_owner'):
             return JsonResponse({'error': 'Unauthorized'}, status=403)
         count = sync_models()

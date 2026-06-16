@@ -1,9 +1,12 @@
 from django.http import JsonResponse
 from django.views import View
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
 from models_registry.models import AIModel
 from models_registry.providers import call_model
 import json, random
 
+@method_decorator(csrf_exempt, name='dispatch')
 class DirectMessageView(View):
     def post(self, request):
         if not request.session.get('is_owner'):

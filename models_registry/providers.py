@@ -67,19 +67,20 @@ def fetch_openrouter_models():
         result = []
         for m in data.get('data', []):
             mid = m.get('id','')
-            pricing = m.get('pricing', {})
-            prompt_cost = float(pricing.get('prompt', 1) or 1)
-            is_free = prompt_cost == 0 or mid.endswith(':free')
-            if not is_free:
+            # Only include models explicitly marked as free with :free suffix
+            if not mid.endswith(':free'):
                 continue
             color, bg = get_color(mid, OR_COLORS)
-            free_id = mid if mid.endswith(':free') else mid + ':free'
             result.append({
-                'model_id': free_id, 'name': mid.split('/')[-1], 'provider': 'openrouter',
-                'is_free': True, 'color': color, 'bg_color': bg,
-                'initials': get_initials(mid.split('/')[-1])
+                'model_id': mid,
+                'name': mid.replace(':free','').split('/')[-1],
+                'provider': 'openrouter',
+                'is_free': True,
+                'color': color,
+                'bg_color': bg,
+                'initials': get_initials(mid.replace(':free','').split('/')[-1])
             })
-        return result[:30]
+        return result if result else _default_or_models()
     except Exception as e:
         logger.error(f"OpenRouter fetch error: {e}")
         return _default_or_models()
@@ -117,12 +118,16 @@ def _default_groq_models():
 
 def _default_or_models():
     models = [
-        ('meta-llama/llama-3.3-70b-instruct:free','llama-3.3-70b'),
-        ('deepseek/deepseek-r1:free','deepseek-r1'),
-        ('mistralai/mistral-small-3.1-24b-instruct:free','mistral-small'),
-        ('qwen/qwen3-235b-a22b:free','qwen3-235b'),
-        ('google/gemma-3-12b-it:free','gemma-3-12b'),
-        ('microsoft/phi-4-reasoning-plus:free','phi-4-reasoning'),
+        ('meta-llama/llama-3.3-70b-instruct:free',    'llama-3.3-70b'),
+        ('deepseek/deepseek-r1:free',                  'deepseek-r1'),
+        ('mistralai/mistral-small-3.1-24b-instruct:free', 'mistral-small'),
+        ('qwen/qwen3-235b-a22b:free',                  'qwen3-235b'),
+        ('google/gemma-3-12b-it:free',                 'gemma-3-12b'),
+        ('microsoft/phi-4-reasoning-plus:free',        'phi-4-reasoning'),
+        ('google/gemma-3n-e4b-it:free',                'gemma-3n-e4b'),
+        ('deepseek/deepseek-v3:free',                  'deepseek-v3'),
+        ('meta-llama/llama-4-scout:free',              'llama-4-scout'),
+        ('meta-llama/llama-4-maverick:free',           'llama-4-maverick'),
     ]
     return [{'model_id':mid,'name':name,'provider':'openrouter','is_free':True,
              'color':get_color(mid,OR_COLORS)[0],'bg_color':get_color(mid,OR_COLORS)[1],
@@ -164,14 +169,29 @@ def call_model(model_obj, messages, system_prompt=None):
 def _call_openai_compat(api_key, base_url, model_id, messages, system_prompt=None, extra_headers=None):
     if not api_key:
         return f"[API key not configured for {model_id}]"
-    client = OpenAI(api_key=api_key, base_url=base_url,
-                    default_headers=extra_headers or {})
-    msgs = []
-    if system_prompt:
-        msgs.append({'role':'system','content':system_prompt})
-    msgs.extend(messages)
-    resp = client.chat.completions.create(model=model_id, messages=msgs, max_tokens=800)
-    return resp.choices[0].message.content
+    try:
+        client = OpenAI(
+            api_key=api_key,
+            base_url=base_url,
+            default_headers=extra_headers or {},
+            max_retries=0,  # No retries — skip on rate limit
+            timeout=30.0,
+        )
+        msgs = []
+        if system_prompt:
+            msgs.append({'role':'system','content':system_prompt})
+        msgs.extend(messages)
+        resp = client.chat.completions.create(model=model_id, messages=msgs, max_tokens=800)
+        return resp.choices[0].message.content
+    except Exception as e:
+        err = str(e)
+        if '429' in err:
+            logger.warning(f"Rate limited: {model_id} — skipping")
+            return None
+        if '404' in err:
+            logger.warning(f"Model not found: {model_id} — skipping")
+            return None
+        raise
 
 def _call_gemini(model_id, messages, system_prompt=None):
     if not settings.GEMINI_API_KEY:
